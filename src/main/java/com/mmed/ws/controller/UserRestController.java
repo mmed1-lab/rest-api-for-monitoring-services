@@ -1,5 +1,6 @@
 package com.mmed.ws.controller;
 
+import com.mmed.ws.dto.LoginDTO;
 import com.mmed.ws.dto.RestApiResponse;
 import com.mmed.ws.dto.UserDTO;
 import com.mmed.ws.model.User;
@@ -28,5 +29,20 @@ public class UserRestController {
                 new RestApiResponse<>(true, "User created successfully", dto),
                 HttpStatus.CREATED
         );
+    }
+
+    @PostMapping("/login")
+    public ResponseEntity<?> login(@RequestBody LoginDTO loginInfo) {
+        String token = null;
+        try {
+            token = service.login(loginInfo.email(), loginInfo.password());
+        } catch (RuntimeException e) {
+            return ResponseEntity
+                    .status(HttpStatus.BAD_REQUEST)
+                    .body(new RestApiResponse<>(false, e.getMessage(), null));
+        }
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(new RestApiResponse<>(true, "Authenticated Successfully", token));
     }
 }

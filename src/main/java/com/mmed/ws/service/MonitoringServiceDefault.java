@@ -98,4 +98,9 @@ public class MonitoringServiceDefault implements MonitoringService {
         return checkRepository.save(check);
     }
 
+    @Override
+    public List<Check> getHistory(UUID serviceId) {
+        return checkRepository.findHistory(serviceId);
+    }
+
 }

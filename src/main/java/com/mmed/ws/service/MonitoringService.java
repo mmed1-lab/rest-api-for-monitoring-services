@@ -12,5 +12,6 @@ public interface MonitoringService {
     List<Service> getAllService(UUID userId);
     Service getServiceById(UUID id);
     Check checkService(UUID id);
+    List<Check> getHistory(UUID serviceId);
 
 }

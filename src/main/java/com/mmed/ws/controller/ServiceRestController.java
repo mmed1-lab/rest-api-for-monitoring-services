@@ -1,5 +1,6 @@
 package com.mmed.ws.controller;
 
+import com.mmed.ws.dto.CheckDTO;
 import com.mmed.ws.dto.RestApiResponse;
 import com.mmed.ws.dto.ServiceDTO;
 import com.mmed.ws.dto.UserDTO;
@@ -77,11 +78,45 @@ public class ServiceRestController {
     public ResponseEntity<?> check(@PathVariable UUID id) {
         try {
             Check check = service.checkService(id);
+            Service service1 = check.getService();
+            ServiceDTO serviceDto = new ServiceDTO(
+                    service1.getId(), service1.getName(), service1.getUrl(), service1.getStatus(),
+                    service1.getLastStatusCode(), service1.getLastResponseTime(), service1.getLastCheckedAt(),
+                    service1.getCreatedAt(), new UserDTO(service1.getUser().getId(), service1.getUser().getEmail(),
+                    service1.getUser().getCreatedAt())
+            );
+            CheckDTO dto = new CheckDTO(
+                    check.getId(),check.getStatus(), check.getStatusCode(),
+                    check.getResponseTime(), check.getCheckedAt(), serviceDto
+            );
             return ResponseEntity
                     .status(HttpStatus.OK)
-                    .body(new RestApiResponse<>(true, "The service is checked", check));
+                    .body(new RestApiResponse<>(true, "The service is checked", dto));
         } catch (RuntimeException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    @GetMapping("/{id}/history")
+    public ResponseEntity<?> getHistory(@PathVariable UUID id) {
+        List<CheckDTO> history = service
+                .getHistory(id)
+                .stream()
+                .map(check -> {
+                    Service service1 = check.getService();
+                    ServiceDTO serviceDto = new ServiceDTO(
+                            service1.getId(), service1.getName(), service1.getUrl(), service1.getStatus(),
+                            service1.getLastStatusCode(), service1.getLastResponseTime(), service1.getLastCheckedAt(),
+                            service1.getCreatedAt(), new UserDTO(service1.getUser().getId(), service1.getUser().getEmail(),
+                            service1.getUser().getCreatedAt())
+                    );
+                    return new CheckDTO(
+                            check.getId(),check.getStatus(), check.getStatusCode(),
+                            check.getResponseTime(), check.getCheckedAt(), serviceDto
+                    );
+                }).toList();
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(new RestApiResponse<>(true, "Success", history));
     }
 }
