@@ -7,6 +7,7 @@ import com.mmed.ws.model.Service;
 import com.mmed.ws.repository.CheckRepository;
 import com.mmed.ws.repository.ServiceRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Scheduled;
 
 import java.io.IOException;
 import java.net.URI;
@@ -41,8 +42,8 @@ public class MonitoringServiceDefault implements MonitoringService {
     }
 
     @Override
-    public List<Service> getAllService(UUID userId) {
-        return serviceRepository.findUserServices(userId);
+    public List<Service> getAllServices(String userEmail) {
+        return serviceRepository.findUserServices(userEmail);
     }
 
     @Override
@@ -101,6 +102,20 @@ public class MonitoringServiceDefault implements MonitoringService {
     @Override
     public List<Check> getHistory(UUID serviceId) {
         return checkRepository.findHistory(serviceId);
+    }
+
+    @Override
+    @Scheduled(fixedRate = 2 * 60 * 60 * 1000) // a check every 2 hours
+    public void checkAllServices() {
+        System.out.println("Executed");
+        List<Service> services = serviceRepository.findAll();
+        for (Service s : services) {
+            try {
+                this.checkService(s.getId());
+            } catch (RuntimeException e) {
+                System.err.println("Error: " + e.getMessage());
+            }
+        }
     }
 
 }

@@ -9,9 +9,10 @@ import java.util.UUID;
 public interface MonitoringService {
 
     Service addService(Service service);
-    List<Service> getAllService(UUID userId);
+    List<Service> getAllServices(String  userEmail);
     Service getServiceById(UUID id);
     Check checkService(UUID id);
     List<Check> getHistory(UUID serviceId);
+    void checkAllServices();
 
 }

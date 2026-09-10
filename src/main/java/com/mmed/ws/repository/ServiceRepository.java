@@ -15,7 +15,7 @@ public interface ServiceRepository extends JpaRepository<Service, UUID> {
     @Query("""
             SELECT s
             FROM Service s
-            WHERE s.user.id = :id
+            WHERE s.user.email = :email
             """)
-    List<Service> findUserServices(UUID id);
+    List<Service> findUserServices(String email);
 }
