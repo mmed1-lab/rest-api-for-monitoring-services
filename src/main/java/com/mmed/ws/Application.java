@@ -9,10 +9,10 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 @SpringBootApplication
 @EnableConfigurationProperties(RsaKeysConfig.class)
 @EnableScheduling
-public class ApiMonitoringApplication {
+public class Application {
 
-	public static void main(String[] args) {
-		SpringApplication.run(ApiMonitoringApplication.class, args);
-	}
+    public static void main(String[] args) {
+        SpringApplication.run(Application.class, args);
+    }
 
 }

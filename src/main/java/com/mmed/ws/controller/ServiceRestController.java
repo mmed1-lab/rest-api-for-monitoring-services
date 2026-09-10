@@ -1,5 +1,6 @@
 package com.mmed.ws.controller;
 
+import com.mmed.ws.agent.ReportAgent;
 import com.mmed.ws.dto.CheckDTO;
 import com.mmed.ws.dto.RestApiResponse;
 import com.mmed.ws.dto.ServiceDTO;
@@ -23,9 +24,11 @@ import java.util.UUID;
 public class ServiceRestController {
 
     private final MonitoringService service;
+    private final ReportAgent agent;
 
-    public ServiceRestController(MonitoringService service) {
+    public ServiceRestController(MonitoringService service, ReportAgent agent) {
         this.service = service;
+        this.agent = agent;
     }
 
     @PostMapping
@@ -139,5 +142,20 @@ public class ServiceRestController {
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .body(new RestApiResponse<>(true, "Success", history));
+    }
+
+    @GetMapping("/{id}/report")
+    public ResponseEntity<?> generateReport(@PathVariable("id") UUID serviceId, @AuthenticationPrincipal Jwt jwt) {
+        String email = jwt.getSubject();
+        Service s = service.getServiceById(serviceId);
+        if (!s.getUser().getEmail().equals(email)) {
+            return ResponseEntity
+                    .status(HttpStatus.UNAUTHORIZED)
+                    .body(new RestApiResponse<>(false, "Unauthorized to do this operation", null));
+        }
+        String report = agent.getReport(serviceId);
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(new RestApiResponse<>(true, "Get the report Successfully", report));
     }
 }
