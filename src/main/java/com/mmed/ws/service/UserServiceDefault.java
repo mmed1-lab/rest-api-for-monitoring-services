@@ -1,5 +1,6 @@
 package com.mmed.ws.service;
 
+import com.mmed.ws.exception.EmailUniqueException;
 import com.mmed.ws.model.User;
 import com.mmed.ws.repository.UserRepository;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -36,6 +37,10 @@ public class UserServiceDefault implements UserService {
 
     @Override
     public User addUser(User user) {
+        User byEmail = repository.findByEmail(user.getEmail()).orElse(null);
+        if (byEmail != null) {
+            throw new EmailUniqueException("This email " + user.getEmail() + " exists in the system");
+        }
         user.setPassword(passwordEncoder.encode(user.getPassword()));
         return repository.save(user);
     }

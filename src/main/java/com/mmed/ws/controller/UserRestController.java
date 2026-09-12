@@ -3,6 +3,7 @@ package com.mmed.ws.controller;
 import com.mmed.ws.dto.LoginDTO;
 import com.mmed.ws.dto.RestApiResponse;
 import com.mmed.ws.dto.UserDTO;
+import com.mmed.ws.exception.EmailUniqueException;
 import com.mmed.ws.model.User;
 import com.mmed.ws.service.UserService;
 import org.springframework.http.HttpStatus;
@@ -23,7 +24,14 @@ public class UserRestController {
 
     @PostMapping("/signup")
     public ResponseEntity<?> saveUser(@RequestBody User user) {
-        User tmp = service.addUser(user); // saved in db
+        User tmp = null;
+        try {
+            tmp = service.addUser(user); // saved in db
+        } catch (EmailUniqueException e) {
+            return ResponseEntity
+                    .status(HttpStatus.CONFLICT)
+                    .body(new RestApiResponse<>(false, e.getMessage(), null));
+        }
         UserDTO dto = new UserDTO(tmp.getId(), tmp.getEmail(), tmp.getCreatedAt());
         return new ResponseEntity<>(
                 new RestApiResponse<>(true, "User created successfully", dto),
