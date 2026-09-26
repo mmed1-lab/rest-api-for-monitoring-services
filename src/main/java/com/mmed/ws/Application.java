@@ -7,7 +7,7 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.scheduling.annotation.EnableScheduling;
 
 @SpringBootApplication
-@EnableConfigurationProperties(RsaKeysConfig.class)
+@EnableConfigurationProperties({RsaKeysConfig.class})
 @EnableScheduling
 public class Application {
 

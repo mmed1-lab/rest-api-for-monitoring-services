@@ -61,7 +61,29 @@ public class MonitoringServiceDefault implements MonitoringService {
         if (service == null) {
             throw new IDNotFoundException("No service with id equals to " + id);
         }
+        return this.checkingService(service);
+    }
 
+    @Override
+    public List<Check> getHistory(UUID serviceId) {
+        return checkRepository.findHistory(serviceId);
+    }
+
+    @Override
+    @Scheduled(fixedRate = 2 * 60 * 60 * 1000) // a check every 2 hours
+    public void checkAllServices() {
+        System.out.println("Executed");
+        List<Service> services = serviceRepository.findAll();
+        for (Service s : services) {
+            try {
+                this.checkingService(s);
+            } catch (RuntimeException e) {
+                System.err.println("Error: " + e.getMessage());
+            }
+        }
+    }
+
+    private Check checkingService(Service service) {
         HttpRequest request = HttpRequest
                 .newBuilder()
                 .uri(URI.create(service.getUrl()))
@@ -80,7 +102,7 @@ public class MonitoringServiceDefault implements MonitoringService {
             statusCode = httpResponse.statusCode();
             status = (statusCode >= 200 && statusCode < 400) ? "UP" : "DOWN";
         } catch (IOException e) {
-            // connection failed, timed out, DNS failure, etc — service is unreachable
+            // connection failed, timed out, DNS failure, etc... — service is unreachable
             responseTime = Duration.between(start, Instant.now()).toMillis();
             statusCode = 0;
             status = "DOWN";
@@ -98,24 +120,4 @@ public class MonitoringServiceDefault implements MonitoringService {
 
         return checkRepository.save(check);
     }
-
-    @Override
-    public List<Check> getHistory(UUID serviceId) {
-        return checkRepository.findHistory(serviceId);
-    }
-
-    @Override
-    @Scheduled(fixedRate = 2 * 60 * 60 * 1000) // a check every 2 hours
-    public void checkAllServices() {
-        System.out.println("Executed");
-        List<Service> services = serviceRepository.findAll();
-        for (Service s : services) {
-            try {
-                this.checkService(s.getId());
-            } catch (RuntimeException e) {
-                System.err.println("Error: " + e.getMessage());
-            }
-        }
-    }
-
 }
